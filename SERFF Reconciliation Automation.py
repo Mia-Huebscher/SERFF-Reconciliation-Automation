@@ -1,6 +1,7 @@
 import requests
 import time
 import base64
+import pyautogui
 import numpy as np
 import pandas as pd
 from datetime import date
@@ -32,6 +33,10 @@ if __name__ == '__main__':
     # Open a Chrome browser and navigate to SERFF
     service = Service(ChromeDriverManager().install())
     options = webdriver.ChromeOptions()
+    prefs = {
+        "printing.print_preview_sticky_settings.appState": '{"recentDestinations":[{"id":"Save as PDF","origin":"local","account":""}],"selectedDestinationId":"Save as PDF","version":2}',
+    } # Add these preferences to default the print option as Save as PDF
+    options.add_experimental_option("prefs", prefs)
     driver = webdriver.Chrome(service=service, options=options)
     driver.get(url=('https://login.serff.com/serff/signin.do'))
 
@@ -117,7 +122,22 @@ if __name__ == '__main__':
                     driver.find_element(By.ID, 'performPdfGeneration').click()
 
                     # Click the download button manually
-                    time.sleep(10)
+                    pyautogui.hotkey('ctrl', 'p')
+                    time.sleep(5)
+                    for _ in range(6):
+                        pyautogui.press('tab')    
+                    time.sleep(5)
+                    pyautogui.press('space') # Opens up the dropdown
+                    pyautogui.press('down', presses=3) # Navigates to Custom
+                    pyautogui.press('enter') # Chooses Custom
+                    time.sleep(2)
+                    pyautogui.press('3')
+                    time.sleep(5)
+                    pyautogui.press('tab', presses=2) # Navigates to the Save button
+                    pyautogui.press('enter') # Presses Save
+                    time.sleep(5)
+                    pyautogui.press('enter') # Presses Save
+                    time.sleep(3)
                 except:
                     pass
 
@@ -127,7 +147,10 @@ if __name__ == '__main__':
                 transaction_fees = [float(fee[1:]) for fee in billing_report['Amount'][:-2] if fee is not np.nan]
                 billing_report.loc[row_idx, 'Amount'] = sum(transaction_fees)
                 billing_report.loc[row_idx, 'Instance Name'] = 'Total'
-                state_fees = [float(fee[1:]) for fee in billing_report['State Fees'][:-3] if fee is not np.nan]
+                try:
+                    state_fees = [float(fee[1:]) for fee in billing_report['State Fees'][:-3] if fee is not np.nan]
+                except:
+                    state_fees = [0]
                 billing_report.loc[row_idx, 'State Fees'] = sum(state_fees)
     
     billing_report.loc[len(billing_report) - 2, 'State Fees'] = ''
