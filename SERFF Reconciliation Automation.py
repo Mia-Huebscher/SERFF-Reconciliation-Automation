@@ -69,7 +69,7 @@ if __name__ == '__main__':
                 # Ensure program is in the right browser window
                 windows = driver.window_handles
                 driver.switch_to.window(windows[0])
-
+                
                 # Input number in search box (upper, right corner)
                 search_input = driver.find_element(By.ID, 'searchField')
                 search_input.send_keys(serff_num)
@@ -122,16 +122,26 @@ if __name__ == '__main__':
                     driver.find_element(By.ID, 'performPdfGeneration').click()
 
                     # Click the download button manually
+                    try:
+                        page_length_element = WebDriverWait(driver, 10).until(
+                            EC.presence_of_element_located((By.ID, 'pagelength'))
+                        )
+                        page_length = page_length_element
+                        print(f'Page length: {page_length}')
+                    except:
+                        print('Could not find page length element')
+                        page_length = '3'
+                    time.sleep(2)
                     pyautogui.hotkey('ctrl', 'p')
                     time.sleep(5)
                     for _ in range(6):
                         pyautogui.press('tab')    
-                    time.sleep(5)
+                    time.sleep(3)
                     pyautogui.press('space') # Opens up the dropdown
                     pyautogui.press('down', presses=3) # Navigates to Custom
                     pyautogui.press('enter') # Chooses Custom
                     time.sleep(2)
-                    pyautogui.press('3')
+                    pyautogui.press(page_length)
                     time.sleep(5)
                     pyautogui.press('tab', presses=2) # Navigates to the Save button
                     pyautogui.press('enter') # Presses Save
